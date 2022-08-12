@@ -31,6 +31,7 @@
 #define ROCKET_ALT    160    // rocket altitude
 #define BTN_LEFT	   25	// pin for btn left (pull up)
 #define BTN_RIGHT	   26	// pin for btn right (pull up)
+#define 
 #define BAT_PIN			35	// pin for ADC read voltage from BAT
 #define PRESSED_NO_ONE	0	// no pressed btns
 #define PRESSED_START	1	// btn start pressed
