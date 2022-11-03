@@ -8,8 +8,7 @@
 //
 //-----------------------------------------------------------------
 
-#ifndef __LPH91572_H__
-#define __LPH91572_H__
+#pragma once
 
 // uncomment to use 8 bit colors
 //#define _8_BIT_COLOR
@@ -117,4 +116,3 @@ void LCD_DrawRect_my (uint8_t x1, uint8_t y1, uint8_t width, uint8_t height, uin
 void LCD_FillRect (uint8_t x1, uint8_t y1, uint8_t width, uint8_t height, uint16_t color);
 #endif
 
-#endif

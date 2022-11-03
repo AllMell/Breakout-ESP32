@@ -1,6 +1,4 @@
-#ifndef __SYMBOLS_H__
-#define __SYMBOLS_H__
-
+#pragma once
 
 const PROGMEM byte zx_font_8x8[][8] = {
         0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,  // Code for char  
@@ -229,4 +227,3 @@ const PROGMEM byte zx_font_8x8[][8] = {
         0x38, 0x6C, 0xEE, 0xEE, 0xEE, 0x6C, 0x38, 0x00   // Code for char я
         };
 
-#endif

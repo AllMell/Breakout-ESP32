@@ -1,94 +1,13 @@
 #include <Arduino.h>
-#include "LPH91572.h" //132x176
-#include "pgmspace.h"
-//#include <avr/eeprom.h>
-//uint16_t EEMEM hi_score_adr;	// eeprom hi score adress
-
-#define SCR_WIDTH 	 131	  // display width
-#define SCR_HEIGHT 	 175	  // display height
-#define SCR_COLOR 0x0000    // back screen color
-#define SCR_DOWN     167	//bottom of the screen. used in the game so as not to overwrite points and lives
-#define BALL_D 		   3	  // ball dimmension DxD
-#define BALL_VX			1		// start X vector
-#define BALL_VY			1	// start Y vector
-#define BALL_X_DIR		0	// 1 - _x++; 0 - _x--
-#define BALL_Y_DIR		0	// 1 - _y++; 0 - _y--
-#define LEFT			0	// for LEFT
-#define RIGHT			1	// for RIGHT
-#define UP				0	// for UP
-#define DOWN			1	// for DOWN
-#define MAX_BALLS      1    // maximum number of balls
-#define BLOCK_W 	   7	  // block width
-#define BLOCK_H		   3	  // block height
-#define BLOCK_NW	  16  // number of blocks wide
-#define BLOCK_NH       10	  // number of blocks in height
-#define BLOCK_SHIFT    2	// blocks horisontal shift
-#define BLOCK_STEP_W	1 // step between blocks (widht?)
-#define BLOCK_STEP_H	1 // step between blocks (height?)
-#define ROCKET_W      16    // rocket widht
-#define ROCKET_H       4    // rocket height 
-#define ROCKET_VX      2    // rocket speed
-#define ROCKET_ALT    160    // rocket altitude
-#define BTN_LEFT	   25	// pin for btn left (pull up)
-#define BTN_RIGHT	   26	// pin for btn right (pull up)
-#define BTN_1
-#define BTN_2
-#define BTN_3
-#define RES_LEFT_VER
-#define RES_LEFT_HOR
-#define RES_RIGHT_VER
-#define RES_RIGHT_HOR
-#define BAT_PIN			35	// pin for ADC read voltage from BAT
-#define PRESSED_NO_ONE	0	// no pressed btns
-#define PRESSED_START	1	// btn start pressed
-#define PRESSED_LEFT	2	// btn left pressed
-#define PRESSED_RIGHT	3	// btn right pressed
-#define ON             1    // for ON
-#define OFF            0    // for OFF
-#define GAME_MODES_Q	6   // game modes quantity
-#define START			0	// game modes:
-#define GAME			1	// --//--
-#define PAUSE			2	// --//--
-#define GAME_OVER		3	// --//--
-#define WIN 			4	// --//--
-#define NEW				5	// --//--
-#define SHOW_SCORE		6	// --//--
-#define LIVES			5	// max lives(lifes?)
-#define SCORE_STEP		50	//scoring step
-#define DIGITS			5	//digits of score
-#define DELAY			5	  // game speed
-
-uint8_t coll_left = 0;	//for counting hits in blocks
-uint8_t coll_right = 0;	
-uint8_t coll_up = 0;	
-uint8_t coll_down = 0;	
-
-uint8_t game_mode = START; 	//initial game mode
-uint8_t lives = LIVES;		//lifes?
-uint16_t score = 0;			//for score
-uint16_t hi_score = 0;		//for record score
-uint8_t digits_array[DIGITS];//for indicate score
-
-//rebound angles from the racket
-const uint8_t angle_arr[19][2] = {{2,3},{1,1},{3,2},{2,1},{5,2},{3,1},{4,1},{5,1},{6,1},{0,1},{6,1},{5,1},{4,1},{3,1},{5,2},{2,1},{3,2},{1,1},{2,3}};
-
-char buffer[16];//for messages
-const char str_0[] = "BREAKOUT";
-const char str_1[] = "press any button";
-const char str_2[] = "to start";
-const char str_3[] = "to continue";
-const char str_4[] = "GO!";
-const char str_5[] = "PAUSE";
-const char str_6[] = "GAME";
-const char str_7[] = "OVER";
-const char str_8[] = "YOU WIN!";
-const char str_9[] = "LEVEL:";
-const char str_10[] = "SCORE:";
-const char str_11[] = "HI SCORE:";
-const char str_12[] = "press";
-const char str_13[] = "< to restart";
-const char str_14[] = "> to continue";
-const char* const str_table[] = {str_0, str_1, str_2, str_3, str_4, str_5, str_6, str_7, str_8, str_9, str_10, str_11, str_12, str_13, str_14};
+#include "defines.h"
+#include "variables.h"
+#include "LPH91572.h"
+#include "BLOCK.h"
+#include "BALL.h"
+#include "ROCKET.h"
+#include "ANALOG_STICK.h"
+#include "ANALOG_BATTON.h"
+#include "DIGITAL_BATTON.h"
 
 //-------------------------------------------------------------------------------
 
@@ -102,8 +21,8 @@ void message(uint8_t _game_mode, bool _on_off){
 	switch(_game_mode){
 		case START:
 			show_string(0, 2, 80, YELLOW, 2, 2, 0, _on_off); //"BREAKOUT"
-			show_string(1, 2, 120, WHITE, 1, 1, 0, _on_off); //"press any batton"
-			show_string(2, 34, 128, WHITE, 1, 1, 0, _on_off); //"to start"
+			show_string(1, 22, 120, WHITE, 1, 1, 0, _on_off); //"press start"
+			show_string(2, 38, 128, WHITE, 1, 1, 0, _on_off); //"to play"
 		break;
 		case GAME:
 			show_string(4, 48, 80, GREEN, 2, 2, 0, _on_off); //"GO!"
@@ -111,18 +30,18 @@ void message(uint8_t _game_mode, bool _on_off){
 		case PAUSE:
 			show_string(5, 24, 80, WHITE, 2, 2, 0, _on_off); //"PAUSE"
 			show_string(12, 44, 112, WHITE, 1, 1, 0, _on_off);//"press"
-			show_string(13, 12, 120, WHITE, 1, 1, 0, _on_off); //"< to restart"
-			show_string(14, 12, 128, WHITE, 1, 1, 0, _on_off); //"> to continue"
+			show_string(13, 0, 120, WHITE, 1, 1, 0, _on_off); //"START to restart"
+			show_string(14, 0, 128, WHITE, 1, 1, 0, _on_off); //"ESC to continue"
 		break;
 		case GAME_OVER:
 			show_string(6, 34, 72, ZX_RED_BR, 2, 2, 0, _on_off); //"GAME"
 			show_string(7, 34, 88, ZX_RED_BR, 2, 2, 0, _on_off); //"OWER"
-			show_string(1, 2, 120, WHITE, 1, 1, 0, _on_off); //"press any batton"
+			show_string(1, 2, 120, WHITE, 1, 1, 0, _on_off); //"press START"
 			show_string(11, 19, 159, ZX_MAGENTA_BR, 1, 1, 0, _on_off);//"HI SCORE:"
 		break;
 		case WIN:
 			show_string(8, 6, 80, ORANGE, 2, 2, 0, _on_off); //"YOU WIN!"
-			show_string(1, 2, 120, WHITE, 1, 1, 0, _on_off); //"press any batton"
+			show_string(1, 2, 120, WHITE, 1, 1, 0, _on_off); //"press START"
 		break;
 		case SHOW_SCORE:
 			show_string(10, 43, 167, ZX_GREEN_BR, 1, 1, 0, _on_off); //"SCORE:"
@@ -132,153 +51,16 @@ void message(uint8_t _game_mode, bool _on_off){
 
 //-------------------------------------------------------------------------------
 
-class BLOCK {
-	public:
-		void Set(uint8_t x, uint8_t y){_x=x;_y=y;}
-		bool Get_State(){return _state;}
-		uint8_t Get_X(){return _x;}
-		uint8_t Get_Y(){return _y;}
-		void Put(){LCD_FillRect (_x + BLOCK_SHIFT, _y, BLOCK_W, BLOCK_H, random(1, WHITE));_state = ON;}
-		void Break(){LCD_FillRect (_x + BLOCK_SHIFT, _y, BLOCK_W, BLOCK_H, SCR_COLOR);_state = OFF;}
-	private:
-      	bool _state;
-		uint8_t _x;
-		uint8_t _y;
-};
-
-class BALL {
-	public:
-		void Set(uint8_t x, uint8_t y, uint8_t vx, uint8_t vy, bool x_dir, bool y_dir, uint8_t dimm, uint16_t color){
-			_x = x;
-			_y = y;
-			_vx = vx;
-			_vy = vy;
-			_x_dir = x_dir;
-			_y_dir = y_dir;		
-			_dimm = dimm;
-			_color = color;
-			_x_temp = 0;
-			_y_temp = 0;
-			_x_old = _x;
-			_y_old = _y;
-			_new = 0;
-		}
-		
-		void Set_X(uint8_t x){_x = x;}
-		void Set_Y(uint8_t y){_y = y;}
-		void Set_VX(uint8_t vx){_vx = vx;}
-		void Set_VY(uint8_t vy){_vy = vy;}
-		void Set_X_DIR(bool x_dir){_x_dir = x_dir;}
-		void Set_Y_DIR(bool y_dir){_y_dir = y_dir;}
-		void Set_X_TEMP(uint8_t x_temp){_x_temp = x_temp;}
-		void Set_Y_TEMP(uint8_t y_temp){_y_temp = y_temp;}
-		void Set_COLOR(uint16_t color){_color = color;}
-		void Reset_NEW(){_new = false;}
-		uint8_t Get_X(){return _x;}
-		uint8_t Get_Y(){return _y;}
-		uint8_t Get_VX(){return _vx;}
-		uint8_t Get_VY(){return _vy;}
-		bool Get_X_DIR(){return _x_dir;}
-		bool Get_Y_DIR(){return _y_dir;}
-		uint8_t Get_DIMM(){return _dimm;}
-		uint16_t Get_Color(){return _color;}
-		void Show(){LCD_FillRect (_x, _y, _dimm, _dimm, _color); _x_old = _x; _y_old = _y; _new = false;}
-		void Hide(){LCD_FillRect (_x, _y, _dimm, _dimm, SCR_COLOR);}
-		void Hide_old(){LCD_FillRect (_x_old, _y_old, _dimm, _dimm, SCR_COLOR);}
-		bool Get_NEW(){return _new;}
-
-		void Moove(){
-			if (!_new){
-				if (_x_temp == _vx){if(_x_dir){_x++; _new = true;} else {_x--; _new = true;}}
-				if (_y_temp == _vy){if(_y_dir){_y++; _new = true;} else {_y--; _new = true;}}
-				if (_x_temp == _vx){_x_temp = 0;} 
-				if (_y_temp == _vy){_y_temp = 0;} 
-				_x_temp ++;
-				_y_temp ++;
-			}
-		}	
-
-		private:
-			bool _new;
-			uint8_t _x_old;
-			uint8_t _y_old;
-			uint8_t _x_temp;
-			uint8_t _y_temp;
-			uint8_t _x;
-			uint8_t _y;
-			uint8_t _vx;
-			uint8_t _vy;
-			bool _x_dir;
-			bool _y_dir;
-			uint8_t _dimm;
-			uint16_t _color;
-};
-
-class ROCKET {
-	
-	public:
-		
-		void Set(uint8_t x, uint8_t width, uint16_t color){
-			_x=x; _width=width; _color=color; _x_old = _x;
-		}
-		uint8_t Get_X(){return _x;}
-		void Show(){
-			if(_x < _width/2){
-				LCD_FillRect (0, ROCKET_ALT, ROCKET_W - (ROCKET_W/2 - _x), ROCKET_H, _color);
-			}else if(_x > (SCR_WIDTH - _width/2)){
-				LCD_FillRect (_x - _width/2, ROCKET_ALT, SCR_WIDTH - _x + _width/2, ROCKET_H, _color);
-			}else{
-				LCD_FillRect (_x - _width/2, ROCKET_ALT, _width, ROCKET_H, _color);
-			}
-		}	
-		void Hide(){
-			if(_x < _width/2){
-				LCD_FillRect (0, ROCKET_ALT, ROCKET_W - (ROCKET_W/2 - _x), ROCKET_H, SCR_COLOR);
-			}else if(_x > (SCR_WIDTH - _width/2)){
-				LCD_FillRect (_x - _width/2, ROCKET_ALT, SCR_WIDTH - _x + _width/2, ROCKET_H, SCR_COLOR);
-			}else{
-				LCD_FillRect (_x - _width/2, ROCKET_ALT, _width, ROCKET_H, SCR_COLOR);
-			}
-		}	
-		
-		void Moove_Left(){
-			Hide();
-			if(_x != 0){_x--;}	
-		}	
-		
-		void Moove_Right(){
-			Hide();
-			if(_x != SCR_WIDTH){_x++;}
-		}	
-
-	private:
-	
-		uint8_t _x;
-		uint8_t _x_old;
-		uint8_t _width;
-		uint8_t _height;
-		uint16_t _color;
-	
-};
-
-//-------------------------------------------------------------------------------
-
 BLOCK objBlock  [BLOCK_NW][BLOCK_NH];
 BALL objBall    [MAX_BALLS];
 ROCKET objRocket;
+ANALOG_STICK objAnalogStickLeft;
+ANALOG_STICK objAnalogStickRight;
+ANALOG_BATTON objAnalogBatton;
+DIGITAL_BATTON objDigitalBattonA;
+DIGITAL_BATTON objDigitalBattonB;
 
 //-------------------------------------------------------------------------------
-
-uint8_t btn_state(){
-	if(!digitalRead(BTN_LEFT)&&!digitalRead(BTN_RIGHT)){
-		return PRESSED_START;} //btn start
-	else if(!digitalRead(BTN_LEFT)){
-		return PRESSED_LEFT;} //btn left
-	else if(!digitalRead(BTN_RIGHT)){
-		return PRESSED_RIGHT;} //btn right
-	else {
-		return PRESSED_NO_ONE;} //no press btn
-}
 
 void show_lives(){
 	for(uint8_t _n = lives, _x = 0; _n > 0; _n--, _x = _x + 8){
@@ -331,7 +113,7 @@ void hide_hi_score(){
 }
 
 void show_bat(){
-	uint16_t _voltage = analogRead(BAT_PIN);
+	uint16_t _voltage = objAnalogBatton.Get_value();
 	digits_array[3] = _voltage / 1000;
 	digits_array[2] = _voltage % 1000 / 100;
 	digits_array[1] = _voltage % 100 / 10;
@@ -346,6 +128,7 @@ for(uint8_t d = 0, x = 24; d < 4; d++, x = x - 8){
 		LCD_Putchar(digits_array[d] + 48, x, SCR_HEIGHT - 8, BLACK, BLACK, 1, 1, 0);
 	}
 }
+
 //-------------------------------------------------------------------------------
 
 void collision_rocket(BALL& _objBall, ROCKET& _objRocket){
@@ -494,7 +277,7 @@ void mode_start(){
 		
 		message(game_mode,ON);
 		
-		if(btn_state() != PRESSED_NO_ONE){
+		if(objAnalogBatton.Get_state() == BTN_ANALOG_PRESSED_START){
 			message(game_mode,OFF);
 			hide_bat();
 			game_mode = GAME;
@@ -518,36 +301,25 @@ void mode_game(){
 
 	while(true){
 
-	switch(btn_state()){
-		case PRESSED_NO_ONE: //no press btn
-			//objRocket.Show();
-		break;
-		case PRESSED_START: //press btn start
+		if(objAnalogBatton.Get_state() == BTN_ANALOG_PRESSED_START){
 			game_mode = PAUSE;
 			return;
-			//delay(DELAY);
-		break;
-		case PRESSED_LEFT: //press btn left
-			objRocket.Moove_Left();
-		break;
-		case PRESSED_RIGHT: //press btn right
-			objRocket.Moove_Right();
-		break;
-	}
+		}
 
-	objRocket.Show();
-	objBall[0].Moove();
+		objRocket.Moove_At(objAnalogStickRight.Get_value_x());
+		objRocket.Show();
+		objBall[0].Moove();
 
-	if(objBall[0].Get_NEW()){
-		collision_rocket(objBall[0], objRocket);
-		collision_walls(objBall[0]);
-		collision_blocks();
-		objBall[0].Hide_old();
-		objBall[0].Show();
-		//objBall[0].Reset_NEW();
-	}
-	if (game_mode == GAME_OVER) return;
-	delay(DELAY);
+		if(objBall[0].Get_NEW()){
+			collision_rocket(objBall[0], objRocket);
+			collision_walls(objBall[0]);
+			collision_blocks();
+			objBall[0].Hide_old();
+			objBall[0].Show();
+		}
+
+		if (game_mode == GAME_OVER) return;
+		delay(DELAY);
 	}
 }
 
@@ -555,14 +327,14 @@ void mode_pause(){
 	message(PAUSE, ON);
 	delay(1000);
 	while(true){
-		if(btn_state() == PRESSED_LEFT){
+		if(objAnalogBatton.Get_state() == BTN_ANALOG_PRESSED_ESCAPE){
 			message(PAUSE, OFF);
 			objBall[0].Hide();
 			objRocket.Hide();
 			game_mode = NEW;
 			return;
 		}
-		if(btn_state() == PRESSED_RIGHT){
+		if(objAnalogBatton.Get_state() == BTN_ANALOG_PRESSED_START){
 			message(PAUSE, OFF);
 			game_mode = GAME;
 			return;
@@ -577,10 +349,10 @@ void mode_game_over(){
 	show_hi_score(hi_score);
 	delay(500);
 	while(true){
-		if(btn_state() != PRESSED_NO_ONE){
-		message(GAME_OVER, OFF);
-		game_mode = NEW;
-		return;
+		if(objAnalogBatton.Get_state() == BTN_ANALOG_PRESSED_START){
+			message(GAME_OVER, OFF);
+			game_mode = NEW;
+			return;
 		}
 	}	
 	
@@ -593,10 +365,10 @@ void mode_win(){
 	show_hi_score(hi_score);
 	delay(500);
 	while(true){
-		if(btn_state() != PRESSED_NO_ONE){
-		message(WIN, OFF);
-		game_mode = NEW;
-		return;
+		if(objAnalogBatton.Get_state() == BTN_ANALOG_PRESSED_START){
+			message(WIN, OFF);
+			game_mode = NEW;
+			return;
 		}
 	}
 }
@@ -622,20 +394,19 @@ void yield(){
 //-------------------------------------------------------------------------------
 
 void setup() {
-	//Serial.begin(115200);
-	//Serial.println("RUN");
-	pinMode(BTN_LEFT, INPUT_PULLUP);
-	pinMode(BTN_RIGHT, INPUT_PULLUP);
+	Serial.begin(115200);
+	Serial.println("RUN");
+	pinMode(PIN_BTN_A, INPUT_PULLUP);
+	pinMode(PIN_BTN_B, INPUT_PULLUP);
 	LCD_init();
 	LCD_FillScreen (SCR_COLOR);
-	//hi_score = eeprom_read_word(&hi_score_adr);	
+	objAnalogStickLeft.Set(PIN_RES_LEFT_X, PIN_RES_LEFT_Y, RES_MAP_MIN, RES_MAP_MAX, RES_CENTRE_ZONE);
+	objAnalogStickRight.Set(PIN_RES_RIGHT_X, PIN_RES_RIGHT_Y, RES_MAP_MIN, RES_MAP_MAX, RES_CENTRE_ZONE);
+	objAnalogBatton.Set(PIN_BTN_ANALOG);
+	objDigitalBattonA.Set(PIN_BTN_A);
+	objDigitalBattonB.Set(PIN_BTN_B);
 	
-	//game_mode = START;
 	
-	//while(true){
-	//	LCD_FillScreen(WHITE);
-	//	LCD_FillScreen(BLACK);
-	//}
 }
 
 void loop() {

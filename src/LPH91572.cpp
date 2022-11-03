@@ -1,6 +1,6 @@
 #include <Arduino.h>
 #include <SPI.h>
-#include "Symbols.h"
+#include "symbols.h"
 #include "LPH91572.h"
 
 //===============================================================
@@ -21,8 +21,8 @@ void LCD_init(void)
  #endif 
 
   delay(10);
-  //digitalWrite(LCD_RS, LOW);
- // Send_to_lcd(CMD, 0x01); //soft reset
+  digitalWrite(LCD_RS, LOW);
+  Send_to_lcd(CMD, 0x01); //soft reset
   delay(10);
 
   //Memory Access Control (Направление заполнения области дисплея (памяти): 0bVHRXXXXX, V - заполнение по вертикали (0 - сверху-вниз, 1 - снизу-вверх),
