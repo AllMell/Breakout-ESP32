@@ -30,13 +30,13 @@ void message(uint8_t _game_mode, bool _on_off){
 		case PAUSE:
 			show_string(5, 24, 80, WHITE, 2, 2, 0, _on_off); //"PAUSE"
 			show_string(12, 44, 112, WHITE, 1, 1, 0, _on_off);//"press"
-			show_string(13, 0, 120, WHITE, 1, 1, 0, _on_off); //"START to restart"
-			show_string(14, 0, 128, WHITE, 1, 1, 0, _on_off); //"ESC to continue"
+			show_string(13, 2, 120, WHITE, 1, 1, 0, _on_off); //"START to restart"
+			show_string(14, 6, 128, WHITE, 1, 1, 0, _on_off); //"ESC to continue"
 		break;
 		case GAME_OVER:
 			show_string(6, 34, 72, ZX_RED_BR, 2, 2, 0, _on_off); //"GAME"
 			show_string(7, 34, 88, ZX_RED_BR, 2, 2, 0, _on_off); //"OWER"
-			show_string(1, 2, 120, WHITE, 1, 1, 0, _on_off); //"press START"
+			show_string(1, 22, 120, WHITE, 1, 1, 0, _on_off); //"press START"
 			show_string(11, 19, 159, ZX_MAGENTA_BR, 1, 1, 0, _on_off);//"HI SCORE:"
 		break;
 		case WIN:
