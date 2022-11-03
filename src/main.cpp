@@ -146,7 +146,6 @@ void collision_rocket(BALL& _objBall, ROCKET& _objRocket){
 		_objBall.Set_VY(angle_arr[_val][1]);
 		_objBall.Set_X_TEMP(_objBall.Get_VX());
 		_objBall.Set_Y_TEMP(_objBall.Get_VY());
-		
 	}	
 }
 
@@ -217,18 +216,15 @@ void collision_walls(BALL& _objBall){
 	} else{
 		_alt = 0;
 	}
-	
 	if(game_mode == GAME){
 		_down = SCR_DOWN;
 	} else{
 		_down = SCR_HEIGHT;
 	}
-
 	if((_objBall.Get_X() == 0)||((_objBall.Get_X() + _objBall.Get_DIMM()) == SCR_WIDTH)){
 		_objBall.Set_X_DIR(!_objBall.Get_X_DIR());
 		_objBall.Set_X_TEMP(_objBall.Get_VX());
 	}
-
 	if(_objBall.Get_Y() == _alt){
 		_objBall.Set_Y_DIR(!_objBall.Get_Y_DIR());
 		_objBall.Set_Y_TEMP(_objBall.Get_VY());
@@ -236,7 +232,6 @@ void collision_walls(BALL& _objBall){
 	if((_objBall.Get_Y() + _objBall.Get_DIMM()) == _down){
 		_objBall.Set_Y_DIR(!_objBall.Get_Y_DIR());
 		_objBall.Set_Y_TEMP(_objBall.Get_VY());
-		
 		if (game_mode == GAME){
 			if(lives != 0){
 				lives--;
@@ -251,22 +246,17 @@ void collision_walls(BALL& _objBall){
 //-------------------------------------------------------------------------------
 
 void mode_start(){
-
 	message(game_mode,ON);
-	
 	objRocket.Set (SCR_WIDTH/2, ROCKET_W, ORANGE);
 	objBall [0].Set (SCR_WIDTH/2, SCR_HEIGHT/2, BALL_VX, BALL_VY, BALL_X_DIR, BALL_Y_DIR, BALL_D, GREEN);
 	objBall [0].Show ();
-	
 	for(uint8_t h = 0; h < BLOCK_NH; h++){
 		for(uint8_t w = 0; w < BLOCK_NW; w++){
 			objBlock[w][h].Set(w*(BLOCK_W+BLOCK_STEP_W), h*(BLOCK_H+BLOCK_STEP_H));
 			objBlock[w][h].Put();
 		}
 	}
-
 	while(true){
-		
 		objBall[0].Moove();
 		collision_walls(objBall[0]);
 		if(objBall[0].Get_NEW()){
@@ -274,9 +264,7 @@ void mode_start(){
 		objBall[0].Show();
 		show_bat();
 		}
-		
 		message(game_mode,ON);
-		
 		if(objAnalogBatton.Get_state() == BTN_ANALOG_PRESSED_START){
 			message(game_mode,OFF);
 			hide_bat();
@@ -287,29 +275,23 @@ void mode_start(){
 }	
 
 void mode_game(){
-
 	for(uint8_t n = 0; n < 3; n++){
 		delay(250);
 		message(GAME,ON);
 		delay(250);
 		message(GAME,OFF);
 	}
-
 	message(SHOW_SCORE,ON);
 	show_score(score);
 	show_lives();
-
 	while(true){
-
 		if(objAnalogBatton.Get_state() == BTN_ANALOG_PRESSED_START){
 			game_mode = PAUSE;
 			return;
 		}
-
 		objRocket.Moove_At(objAnalogStickRight.Get_value_x());
 		objRocket.Show();
 		objBall[0].Moove();
-
 		if(objBall[0].Get_NEW()){
 			collision_rocket(objBall[0], objRocket);
 			collision_walls(objBall[0]);
@@ -317,7 +299,6 @@ void mode_game(){
 			objBall[0].Hide_old();
 			objBall[0].Show();
 		}
-
 		if (game_mode == GAME_OVER) return;
 		delay(DELAY);
 	}
@@ -384,12 +365,11 @@ void mode_new(){
 	objBall[0].Hide();
 	objBall[0].Hide_old();
 	objRocket.Hide();
-
 }
 
 void yield(){
-		objBall[0].Moove();
-	}
+	objBall[0].Moove();
+}
 
 //-------------------------------------------------------------------------------
 
@@ -405,13 +385,10 @@ void setup() {
 	objAnalogBatton.Set(PIN_BTN_ANALOG);
 	objDigitalBattonA.Set(PIN_BTN_A);
 	objDigitalBattonB.Set(PIN_BTN_B);
-	
-	
 }
 
 void loop() {
-  
-	switch(game_mode){// game mode selector
+  	switch(game_mode){// game mode selector
 		case START: 
 			mode_start();
 		break;
@@ -431,5 +408,4 @@ void loop() {
 			mode_new();
 		break;
 	}
-
 }

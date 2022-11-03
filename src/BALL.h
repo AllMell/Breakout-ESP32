@@ -17,7 +17,6 @@ class BALL {
 			_y_old = _y;
 			_new = 0;
 		}
-		
 		void Set_X(uint8_t x){_x = x;}
 		void Set_Y(uint8_t y){_y = y;}
 		void Set_VX(uint8_t vx){_vx = vx;}
@@ -40,7 +39,6 @@ class BALL {
 		void Hide(){LCD_FillRect (_x, _y, _dimm, _dimm, SCR_COLOR);}
 		void Hide_old(){LCD_FillRect (_x_old, _y_old, _dimm, _dimm, SCR_COLOR);}
 		bool Get_NEW(){return _new;}
-
 		void Moove(){
 			if (!_new){
 				if (_x_temp == _vx){if(_x_dir){_x++; _new = true;} else {_x--; _new = true;}}
@@ -51,19 +49,18 @@ class BALL {
 				_y_temp ++;
 			}
 		}	
-
-		private:
-			bool _new;
-			uint8_t _x_old;
-			uint8_t _y_old;
-			uint8_t _x_temp;
-			uint8_t _y_temp;
-			uint8_t _x;
-			uint8_t _y;
-			uint8_t _vx;
-			uint8_t _vy;
-			bool _x_dir;
-			bool _y_dir;
-			uint8_t _dimm;
-			uint16_t _color;
+	private:
+		bool _new;
+		uint8_t _x_old;
+		uint8_t _y_old;
+		uint8_t _x_temp;
+		uint8_t _y_temp;
+		uint8_t _x;
+		uint8_t _y;
+		uint8_t _vx;
+		uint8_t _vy;
+		bool _x_dir;
+		bool _y_dir;
+		uint8_t _dimm;
+		uint16_t _color;
 };

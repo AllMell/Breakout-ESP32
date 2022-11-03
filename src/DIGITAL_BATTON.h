@@ -5,7 +5,6 @@ class DIGITAL_BATTON{
         void Set (uint8_t pin){
             _pin = pin;
         }
-
         bool Get_state(){
             _refresh();
             return _state;
