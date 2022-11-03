@@ -31,13 +31,18 @@
 #define ROCKET_ALT    160    // rocket altitude
 #define BTN_LEFT	   25	// pin for btn left (pull up)
 #define BTN_RIGHT	   26	// pin for btn right (pull up)
-#define 
+#define BTN_1
+#define BTN_2
+#define BTN_3
+#define RES_LEFT_VER
+#define RES_LEFT_HOR
+#define RES_RIGHT_VER
+#define RES_RIGHT_HOR
 #define BAT_PIN			35	// pin for ADC read voltage from BAT
 #define PRESSED_NO_ONE	0	// no pressed btns
 #define PRESSED_START	1	// btn start pressed
 #define PRESSED_LEFT	2	// btn left pressed
 #define PRESSED_RIGHT	3	// btn right pressed
-#define _RESISTOR 	  A2	  // analog pin for resistor
 #define ON             1    // for ON
 #define OFF            0    // for OFF
 #define GAME_MODES_Q	6   // game modes quantity
