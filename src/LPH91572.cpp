@@ -1,6 +1,6 @@
 #include <Arduino.h>
 #include <SPI.h>
-#include "symbols.h"
+#include "Symbols.h"
 #include "LPH91572.h"
 
 //===============================================================
