@@ -2,6 +2,12 @@
 
 class DIGITAL_BATTON{
     public:
+        DIGITAL_BATTON(){
+            _pin = PIN_BTN_A;// 
+        }
+        DIGITAL_BATTON(uint8_t pin){
+            _pin = pin;
+        }
         void Set (uint8_t pin){
             _pin = pin;
         }

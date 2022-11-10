@@ -2,6 +2,12 @@
 
 class ANALOG_BATTON{
     public:
+        ANALOG_BATTON(){
+            _pin = PIN_BTN_ANALOG;
+        }
+        ANALOG_BATTON(uint8_t pin){
+            _pin = pin;
+        }
         void Set(uint8_t pin){
             _pin = pin;
         }
