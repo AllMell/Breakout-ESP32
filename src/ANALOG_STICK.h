@@ -2,6 +2,20 @@
 
 class ANALOG_STICK {
     public:
+        ANALOG_STICK(){
+            _pin_x = PIN_RES_LEFT_X; 
+            _pin_y = PIN_RES_LEFT_Y; 
+            _min = RES_MAP_MIN; 
+            _max = RES_MAP_MAX;
+            _center_zone = RES_CENTRE_ZONE/2;
+        }
+        ANALOG_STICK(uint8_t pin_x, uint8_t pin_y, int16_t min, int16_t max, int16_t center_zone){
+            _pin_x = pin_x; 
+            _pin_y = pin_y; 
+            _min = min; 
+            _max = max;
+            _center_zone = center_zone/2;
+        }
         void Set (uint8_t pin_x, uint8_t pin_y, int16_t min, int16_t max, int16_t center_zone){ 
             _pin_x = pin_x; 
             _pin_y = pin_y; 
